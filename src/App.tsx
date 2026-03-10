@@ -3,6 +3,7 @@ import { Navbar } from "./components/Navbar";
 import { HeroSection } from "./pages/HeroSection";
 import { FeatureSection } from "./pages/FeatureSection";
 import SoilAnalysis from "./pages/SoilAnalysis";
+import LearnMoreSeaction from "./pages/LearnMoreSeaction";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
               <main className="grow">
                 <SoilAnalysis />
               </main>
+              <LearnMoreSeaction/>
             </>
           }
         />
