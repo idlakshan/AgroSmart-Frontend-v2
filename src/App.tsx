@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
 import { HeroSection } from "./pages/HeroSection";
+import { FeatureSection } from "./pages/FeatureSection";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
             element={
               <>
                 <HeroSection />
+                <FeatureSection />
               </>
             }
           />
