@@ -5,31 +5,23 @@ import {
   DropletsIcon,
   SproutIcon,
 } from "lucide-react";
-import { useState, type ReactNode} from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react";
 
-type NavItem = {
+interface NavItem {
   name: string;
   icon: ReactNode;
-};
+}
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
-
   const { user } = useUser();
-
   const role = user?.publicMetadata?.role as string | undefined;
 
   const navItems: NavItem[] = [
     { name: "Analysis", icon: <DropletsIcon className="h-4 w-4" /> },
     { name: "Features", icon: <SproutIcon className="h-4 w-4" /> },
-    { name: "Recommendations", icon: <LeafIcon className="h-4 w-4" /> },
-  ];
-
-  const mobileNavItems: NavItem[] = [
-    { name: "Soil Analysis", icon: <DropletsIcon className="h-4 w-4" /> },
-    { name: "Crop Health", icon: <SproutIcon className="h-4 w-4" /> },
     { name: "Recommendations", icon: <LeafIcon className="h-4 w-4" /> },
   ];
 
@@ -113,7 +105,7 @@ export const Navbar = () => {
 
       {isMenuOpen && (
         <div className="md:hidden bg-white mt-2 py-2 px-4 rounded-lg shadow-lg border border-green-50">
-          {mobileNavItems.map((item) => (
+          {navItems.map((item) => (
             <a
               key={item.name}
               href={`#${item.name.toLowerCase().replace(" ", "-")}`}

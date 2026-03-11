@@ -17,6 +17,17 @@ import { useGetWeatherByDistrictMutation } from "../redux/features/weather/weath
 import { useAnalyzeSoilMutation } from "../redux/features/soil/soilApi";
 import { useLazyGetCropsForSearchQueryQuery } from "../redux/features/crop/cropApi";
 
+import { useDispatch, useSelector } from "react-redux";
+
+import {
+  setSoilType as setReduxSoilType,
+  setConfidence as setReduxConfidence,
+  setSelectedDistrict as setReduxDistrict,
+  setRagResults as setReduxRagResults,
+  clearSoilAnalysis as clearReduxSoilAnalysis,
+} from "../redux/features/soilSlice";
+import type { AppDispatch, RootState } from "../redux/store";
+
 interface WeatherResponse {
   avg_temp_annual: number;
   avg_humidity_annual: number;
@@ -60,19 +71,19 @@ const districts: string[] = [
   "Vavuniya",
 ];
 
-const SoilAnalysis: React.FC = () => {
-  // --- Component State ---
+const SoilAnalysis = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [soilType, setSoilType] = useState<string | null>(null);
-  const [confidence, setConfidence] = useState<number | null>(null);
   const [heatMapUrl, setHeatMapUrl] = useState<string | null>(null);
-  const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
-
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
 
   const { isSignedIn } = useUser();
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const { soilType, confidence, selectedDistrict } = useSelector(
+    (state: RootState) => state.soil,
+  );
 
   const [
     fetchWeather,
@@ -81,11 +92,11 @@ const SoilAnalysis: React.FC = () => {
   const [analyzeSoil] = useAnalyzeSoilMutation();
   const [triggerCropSearch] = useLazyGetCropsForSearchQueryQuery();
 
-  // --- clear prediction function ---
   const clearPrediction = () => {
-    setSoilType(null);
-    setConfidence(null);
+    setSelectedImage(null);
+    setPreviewUrl(null);
     setHeatMapUrl(null);
+    dispatch(clearReduxSoilAnalysis());
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,7 +108,6 @@ const SoilAnalysis: React.FC = () => {
     }
   };
 
-  // --- Soil Analysis function ---
   const handleAnalyze = async () => {
     if (!isSignedIn) {
       navigate("/sign-in");
@@ -112,11 +122,12 @@ const SoilAnalysis: React.FC = () => {
       const url = new URL(soil.image_url, FLASK_BASE);
       url.searchParams.set("t", Date.now().toString());
       const fullHeatmapUrl = url.toString();
+      setHeatMapUrl(fullHeatmapUrl);
 
       const conf = Number(soil.confidence) / 100;
-      setSoilType(soil.label);
-      setConfidence(conf);
-      setHeatMapUrl(fullHeatmapUrl);
+
+      dispatch(setReduxSoilType(soil.label));
+      dispatch(setReduxConfidence(conf));
 
       if (isNaN(conf) || conf < CONF_THRESHOLD) {
         Swal.fire({
@@ -125,9 +136,10 @@ const SoilAnalysis: React.FC = () => {
           text: "Please upload a clearer soil image or try another.",
           confirmButtonText: "OK",
         });
-
+        dispatch(setReduxRagResults([]));
         return;
       }
+
       const weather = (await fetchWeather(
         selectedDistrict,
       ).unwrap()) as WeatherResponse;
@@ -135,14 +147,14 @@ const SoilAnalysis: React.FC = () => {
       const hum = Number(weather?.avg_humidity_annual);
       const rain = Number(weather?.total_rainfall_annual);
 
-      // --- Crop Query ---
       const queryText =
         `Crops suitable for ${soil.label} soil` +
         `${!isNaN(temp) ? `, with temperature around ${temp.toFixed(0)}°C` : ""}` +
         `${!isNaN(hum) ? `, with humidity about ${hum.toFixed(0)}%` : ""}` +
         `${!isNaN(rain) ? `, and annual rainfall near ${rain.toFixed(0)} mm` : ""}`;
 
-      await triggerCropSearch({ query: queryText }).unwrap();
+      const data = await triggerCropSearch({ query: queryText }).unwrap();
+      dispatch(setReduxRagResults(data));
     } catch (err) {
       console.error("Analysis failed:", err);
     } finally {
@@ -195,11 +207,7 @@ const SoilAnalysis: React.FC = () => {
                 />
                 <button
                   className="absolute top-2 right-2 bg-red-500 p-2 rounded-full text-white hover:bg-red-600 transition-colors"
-                  onClick={() => {
-                    setSelectedImage(null);
-                    setPreviewUrl(null);
-                    clearPrediction();
-                  }}
+                  onClick={clearPrediction}
                 >
                   <TrashIcon className="h-4 w-4" />
                 </button>
@@ -236,7 +244,7 @@ const SoilAnalysis: React.FC = () => {
               <select
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 value={selectedDistrict || ""}
-                onChange={(e) => setSelectedDistrict(e.target.value)}
+                onChange={(e) => dispatch(setReduxDistrict(e.target.value))}
               >
                 <option value="">Select a district</option>
                 {districts.map((district) => (
@@ -285,12 +293,7 @@ const SoilAnalysis: React.FC = () => {
                       <h4 className="text-lg font-medium">
                         Soil Analysis Heat Map
                       </h4>
-                      <button
-                        className="text-gray-500 hover:text-gray-700"
-                        title="What is this?"
-                      >
-                        <InfoIcon className="h-4 w-4" />
-                      </button>
+                      <InfoIcon className="h-4 w-4 text-gray-500" />
                     </div>
                     <div className="relative h-64 w-full overflow-hidden rounded-lg border border-gray-200">
                       <img
@@ -298,19 +301,7 @@ const SoilAnalysis: React.FC = () => {
                         alt="Soil heat map"
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute bottom-2 right-2 bg-white bg-opacity-90 p-2 rounded-lg text-xs">
-                        <div className="flex items-center">
-                          <div className="w-3 h-3 bg-red-500 rounded-full mr-1"></div>
-                          <span className="mr-2">High</span>
-                          <div className="w-3 h-3 bg-blue-500 rounded-full mr-1"></div>
-                          <span>Low</span>
-                        </div>
-                      </div>
                     </div>
-                    <p className="text-sm text-gray-600 mt-2">
-                      This heat map highlights the most important regions used
-                      for classification.
-                    </p>
                   </div>
                 )}
 
@@ -337,53 +328,42 @@ const SoilAnalysis: React.FC = () => {
                         Failed to load weather data
                       </p>
                     ) : weatherData ? (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="flex items-center space-x-3">
-                            <div className="p-2 bg-amber-50 rounded-lg text-amber-600">
-                              <ThermometerIcon className="h-5 w-5" />
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Avg Temp</p>
-                              <p className="font-medium text-gray-800">
-                                {Number(weatherData.avg_temp_annual).toFixed(1)}
-                                °C
-                              </p>
-                            </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 bg-amber-50 rounded-lg text-amber-600">
+                            <ThermometerIcon className="h-5 w-5" />
                           </div>
-
-                          <div className="flex items-center space-x-3">
-                            <div className="p-2 bg-teal-50 rounded-lg text-teal-600">
-                              <DropletIcon className="h-5 w-5" />
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500">
-                                Avg Humidity
-                              </p>
-                              <p className="font-medium text-gray-800">
-                                {Number(
-                                  weatherData.avg_humidity_annual,
-                                ).toFixed(0)}
-                                %
-                              </p>
-                            </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Avg Temp</p>
+                            <p className="font-medium text-gray-800">
+                              {weatherData.avg_temp_annual.toFixed(1)}°C
+                            </p>
                           </div>
-
-                          <div className="flex items-center space-x-3">
-                            <div className="p-2 bg-sky-50 rounded-lg text-sky-600">
-                              <CloudRainIcon className="h-5 w-5" />
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500">
-                                Annual Rainfall
-                              </p>
-                              <p className="font-medium text-gray-800">
-                                {Number(
-                                  weatherData.total_rainfall_annual,
-                                ).toFixed(0)}{" "}
-                                mm
-                              </p>
-                            </div>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 bg-teal-50 rounded-lg text-teal-600">
+                            <DropletIcon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">
+                              Avg Humidity
+                            </p>
+                            <p className="font-medium text-gray-800">
+                              {weatherData.avg_humidity_annual.toFixed(0)}%
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 bg-sky-50 rounded-lg text-sky-600">
+                            <CloudRainIcon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">
+                              Annual Rainfall
+                            </p>
+                            <p className="font-medium text-gray-800">
+                              {weatherData.total_rainfall_annual.toFixed(0)} mm
+                            </p>
                           </div>
                         </div>
                       </div>

@@ -12,7 +12,7 @@ interface Feature {
   description: string;
 }
 
-export const FeatureSection: React.FC = () => {
+export const FeatureSection = () => {
   const features: Feature[] = [
     {
       icon: <MicroscopeIcon className="h-10 w-10 text-green-600" />,

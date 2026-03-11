@@ -1,28 +1,28 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { baseURL } from "../../../utils/baseURL";
 
-
-export interface NewCrop {
-  name: string;
-  category: string;
-  soilTypes: string[];
-}
-
-export interface Crop {
+export interface CropDetails {
   id: string;
   name: string;
+  image: string;
+  description: string;
+  confidence: number;
   category: string;
-  soilTypes: string[];
-  createdAt: string;
-  updatedAt: string;
+  growthPeriod?: string;
+  waterRequirements?: string;
+  soilRequirements?: string;
+  avgTemperature?: string;
+  avgHumidity?: string;
+  rainfall?: string;
+  fertilizers?: string;
 }
 
 export interface CropSearchResult {
-  id: string;
-  name: string;
-  category: string;
-  soilTypes: string[];
+  confidence: number;
+  crop: CropDetails;
 }
+
+type CreateCropRequest = Omit<CropDetails, "_id">;
 
 export interface CropSearchQuery {
   query: string;
@@ -39,7 +39,7 @@ const cropApi = createApi({
     },
   }),
   endpoints: (builder) => ({
-    createCrop: builder.mutation<Crop, NewCrop>({
+    createCrop: builder.mutation<CropDetails, CreateCropRequest>({
       query: (newCrop) => ({
         url: "crops",
         method: "POST",
@@ -54,9 +54,7 @@ const cropApi = createApi({
   }),
 });
 
-export const {
-  useCreateCropMutation,
-  useLazyGetCropsForSearchQueryQuery,
-} = cropApi;
+export const { useCreateCropMutation, useLazyGetCropsForSearchQueryQuery } =
+  cropApi;
 
 export default cropApi;
