@@ -4,6 +4,7 @@ import { HeroSection } from "./pages/HeroSection";
 import { FeatureSection } from "./pages/FeatureSection";
 import SoilAnalysis from "./pages/SoilAnalysis";
 import LearnMoreSeaction from "./pages/LearnMoreSeaction";
+import { Footer } from "./components/Footer";
 
 function App() {
   return (
@@ -18,8 +19,10 @@ function App() {
               <FeatureSection />
               <main className="grow">
                 <SoilAnalysis />
+                <LearnMoreSeaction />
               </main>
-              <LearnMoreSeaction/>
+
+              <Footer />
             </>
           }
         />
