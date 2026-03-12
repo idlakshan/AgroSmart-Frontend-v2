@@ -6,11 +6,10 @@ import SoilAnalysis from "./components/SoilAnalysis";
 import LearnMoreSeaction from "./pages/LearnMoreSeaction";
 import { Footer } from "./components/Footer";
 import CropRecommendation from "./components/CropRecommendation";
-
+import { ToastContainer } from "react-toastify";
+import AdminCrops from "./pages/AdminCrops";
 
 function App() {
- 
-
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <Navbar />
@@ -31,7 +30,9 @@ function App() {
             </>
           }
         />
+        <Route path="/admin/crops" element={<AdminCrops />} />
       </Routes>
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }

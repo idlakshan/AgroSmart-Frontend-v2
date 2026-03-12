@@ -22,7 +22,7 @@ export interface CropSearchResult {
   crop: CropDetails;
 }
 
-type CreateCropRequest = Omit<CropDetails, "_id">;
+export type CreateCropRequest = Omit<CropDetails, "id" | "confidence">;
 
 export interface CropSearchQuery {
   query: string;
