@@ -1,73 +1,42 @@
-# React + TypeScript + Vite
+# AgroSmart
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**AgroSmart** is an AI-assisted crop recommendation system designed for Sri Lankan farmers.  
+It allows users to upload soil images, select district-wise weather data, and get crop suggestions based on soil type and weather.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+- Upload soil images to predict soil type using a **CNN-based model** (Flask backend).  
+- Retrieve district-wise weather data (temperature, humidity, rainfall) from **Open-Meteo API**.  
+- Crop recommendation using **vector search (RAG)** and similarity scoring.  
+- Admin panel to create, update, and manage crops.  
+- Fully typed frontend with **React, TypeScript**, and **Redux Toolkit Query**.  
+- User authentication with **Clerk**.  
+- Real-time notifications using **React-Toastify**.  
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+---
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+**Frontend:**
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- React + Vite + TypeScript  
+- Tailwind CSS for styling  
+- Redux Toolkit + RTK Query for state & API  
+- Zod for form validation  
+- React-Toastify for notifications  
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+**Backend (Express + LLM/RAG):**
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- Node.js + Express  
+- MongoDB for crop storage and **vector embeddings**  
+- Clerk for authentication  
+- Open-Meteo API integration for weather data  
+- **LangChain + OpenAI Embeddings** for semantic crop search and recommendations
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## GitHub Repositories
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **Frontend:** [https://github.com/idlakshan/AgroSmart-Frontend-v2](https://github.com/idlakshan/AgroSmart-Frontend-v2)  
+- **Backend:** [https://github.com/idlakshan/AgroSmart-Backend](https://github.com/idlakshan/AgroSmart-Backend)  
+- **AI Model (Flask + CNN):** [https://github.com/idlakshan/AgroSmart-CNN-Model](https://github.com/idlakshan/AgroSmart-CNN-Model)  
