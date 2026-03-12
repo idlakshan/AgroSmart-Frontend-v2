@@ -7,18 +7,21 @@ import type {
   CropSearchResult,
 } from "../redux/features/crop/cropApi";
 import type { RootState } from "../redux/store";
+import { CropModal } from "./CropModal";
 
-interface CropRecommendationProps {
-  onCropClick?: (crop: CropDetails) => void;
-}
-
-export const CropRecommendation = ({onCropClick = () => {}}: CropRecommendationProps) => {
-  const ragResults = useSelector((state: RootState) => state.soil.ragResults) as CropSearchResult[];
+export const CropRecommendation = () => {
+  const ragResults = useSelector(
+    (state: RootState) => state.soil.ragResults,
+  ) as CropSearchResult[];
 
   const [sortBy, setSortBy] = useState<"confidence" | "name">("confidence");
   const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [selectedCrop, setSelectedCrop] = useState<{
+    crop: CropDetails;
+    confidence: number;
+  } | null>(null);
 
-  console.log(ragResults);
+  // console.log(ragResults);
 
   const filtered = ragResults.filter(
     (item) =>
@@ -31,6 +34,13 @@ export const CropRecommendation = ({onCropClick = () => {}}: CropRecommendationP
       ? b.confidence - a.confidence
       : a.crop.name.localeCompare(b.crop.name),
   );
+
+  const handleCropClick = (crop: CropDetails, confidence: number) => {
+    setSelectedCrop({
+      crop,
+      confidence,
+    });
+  };
 
   if (ragResults.length === 0) {
     return (
@@ -69,7 +79,7 @@ export const CropRecommendation = ({onCropClick = () => {}}: CropRecommendationP
               key={item.crop.id}
               crop={item.crop}
               confidence={Math.round(item.confidence * 100)}
-              onClick={onCropClick}
+              onClick={handleCropClick}
             />
           ))}
         </div>
@@ -82,6 +92,15 @@ export const CropRecommendation = ({onCropClick = () => {}}: CropRecommendationP
           </div>
         )}
       </div>
+      {selectedCrop && (
+        <CropModal
+          crop={{
+            ...selectedCrop.crop,
+            confidence: selectedCrop.confidence,
+          }}
+          onClose={() => setSelectedCrop(null)}
+        />
+      )}
     </section>
   );
 };

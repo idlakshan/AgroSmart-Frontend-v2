@@ -3,14 +3,14 @@ import type { CropDetails } from "../redux/features/crop/cropApi";
 export interface CropCardProps {
   crop: CropDetails;
   confidence: number;
-  onClick: (crop: CropDetails) => void;
+  onClick: (crop: CropDetails, confidence: number) => void;
 }
 
 export const CropCard = ({ crop, confidence, onClick }: CropCardProps) => {
   return (
     <div
       className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105 cursor-pointer"
-      onClick={() => onClick(crop)}
+      onClick={() => onClick(crop, confidence)}
     >
       <div className="relative">
         <img
